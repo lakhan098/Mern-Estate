@@ -32,4 +32,32 @@ export const signin = async (req,res,next) => {
     } catch (error) {
         next(error)
     }
+};
+
+export const google = async (req,res,next) => {
+    const  { name, email, photo } = req.body;
+    try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser){
+            const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET);
+            const { password: pass, ...rest_info } = existingUser._doc;
+            res.cookie('access_token',token, { httpOnly: true }).status(200).json(rest_info);
+        } else {
+            const generatedPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
+            const hashedPassword = bcryptjs.hashSync(generatedPassword, 10);
+            const new_user = new User({
+                username: name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-4),
+                email,
+                password: hashedPassword,
+                avatar: photo,
+            })
+            await new_user.save()
+            const token = jwt.sign({id: new_user._id}, process.env.JWT_SECRET);
+            const { password: pass, ...rest_info } = new_user._doc;
+            res.cookie('access_token',token, { httpOnly: true }).status(200).json(rest_info);
+        }
+
+    } catch (error) {
+        next(error)
+    }
 }
