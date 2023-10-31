@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import UserRouter from './routes/user_routes.js';
 import AuthRouter from './routes/auth_routes.js';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ const app = express();
 app.use(cors());
 
 app.use(express.json());
+app.use(cookieParser())
 
 app.get("/", (req,res) => {
     res.send("App is running");
