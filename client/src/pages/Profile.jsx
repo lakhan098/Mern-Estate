@@ -23,7 +23,7 @@ export default function Profile() {
   const [fileUploadError,setFileUploadError] = useState(false)
   const [formData, setFormData] = useState({})
   const [updateSuccess, setUpdateSuccess] = useState(false)
-  const [showListingsError, setShowListingsError] = useState(false)
+  const [showListingsError, setShowListingsError] = useState(null)
   const [userListings, setUserListings] = useState([])
   const dispatch = useDispatch();
 
@@ -124,33 +124,33 @@ export default function Profile() {
 
   const handleShowListings = async (e) => {
     try {
-      setShowListingsError(false)
+      setShowListingsError(null)
       const res = await fetch(`/api/user/listings/${currentUser._id}`)
       const data = await res.json()
       if(data.success === false){
-        setShowListingsError(true)
+        setShowListingsError(data.message)
         return;
       }
       setUserListings(data)
     } catch (error) {
-      setShowListingsError(true)
+      setShowListingsError(error.message)
     }
   }
 
   const handleDeleteListing = async (listingId, e) => {
     try {
-      setShowListingsError(false)
+      setShowListingsError(null)
       const res = await fetch(`/api/listing/delete/${listingId}`,{
         method: 'DELETE',
       })
       const data = await res.json()
       if(data.success === false){
-        setShowListingsError(true)
+        setShowListingsError(data.message)
         return;
       }
       setUserListings((prev) => prev.filter((listing) => listing._id !== listingId))
     } catch (error) {
-      setShowListingsError(true)
+      setShowListingsError(error.message)
     }
   }
   return (
@@ -200,7 +200,7 @@ export default function Profile() {
       </p>
       <button onClick={handleShowListings} className='text-green-700 w-full'>Show Listings</button>
       <p className='text-red-700 mt-5'>
-        {showListingsError ? "Error in Showing Listings" : ""}
+        {showListingsError ? showListingsError : ""}
       </p>
 
       {userListings && userListings.length > 0 &&
